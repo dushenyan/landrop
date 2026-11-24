@@ -51,6 +51,7 @@ make start PORT=6861 WEB_PORT=6862 DATA_DIR=/tmp/landrop MAX_FILE=5368709125
 
 ## 扫码访问
 
+- 页面顶部「扫码访问」按钮可打开二维码；旁边的复制按钮一键复制访问地址，弹窗内也能复制。
 - 服务端 `/api/access/qrcode` 直接返回二维码 PNG，长期有效。旧的 `/api/pair/qrcode` 是一次性配对令牌，5 分钟过期，两者用途不同。
 
 

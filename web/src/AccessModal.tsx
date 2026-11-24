@@ -1,5 +1,6 @@
 import { useEffect, useRef, useState } from 'react';
 import { api } from './api';
+import { copyText } from './clipboard';
 import Icon from './icons';
 import { useScrollLock } from './useScrollLock';
 
@@ -23,7 +24,11 @@ export default function AccessModal({ address, onClose, onCopied }: Props) {
   }, [onClose]);
 
   const copy = async () => {
+    if (await copyText(address)) {
       onCopied();
+    } else {
+      window.prompt('手动复制：', address);
+    }
   };
 
   return (

@@ -8,6 +8,7 @@ import Uploader from './Uploader';
 import Gallery from './Gallery';
 import PreviewModal from './PreviewModal';
 import AccessModal from './AccessModal';
+import { copyText } from './clipboard';
 import { useScrollLock } from './useScrollLock';
 
 const queryClient = new QueryClient();
@@ -26,6 +27,7 @@ function AppInner() {
   useScrollLock(!!confirm);
 
   const infoQ = useQuery<ServerInfo>({ queryKey: ['info'], queryFn: api.serverInfo });
+  const serverAddress = infoQ.data?.address ?? window.location.origin;
   const assetsQ = useQuery<Asset[]>({ queryKey: ['assets'], queryFn: () => api.assets() });
   const devicesQ = useQuery<Device[]>({ queryKey: ['devices'], queryFn: api.devices });
   const trashQ = useQuery<Asset[]>({ queryKey: ['trash'], queryFn: api.trash, enabled: view === 'trash' });
@@ -40,6 +42,14 @@ function AppInner() {
   useEffect(() => () => {
     if (toastTimer.current !== null) window.clearTimeout(toastTimer.current);
   }, []);
+
+  const copyAddress = useCallback(async () => {
+    if (await copyText(serverAddress)) {
+      showToast('访问地址已复制');
+    } else {
+      window.prompt('手动复制：', serverAddress);
+    }
+  }, [serverAddress, showToast]);
 
   // 注册设备 + 建立实时连接
   useEffect(() => {
@@ -136,6 +146,17 @@ function AppInner() {
             <p>局域网闪传 · 原文件不压缩</p>
           </div>
         </div>
+        <div className="access-row">
+          <button type="button" className="access-chip" onClick={() => setAccessOpen(true)}
+            aria-label="查看扫码访问地址" title="扫码访问">
+            <Icon name="qr" size={14} />
+            <span className="access-addr">{infoQ.data?.ip ?? '扫码访问'}</span>
+          </button>
+          <button type="button" className="access-copy" onClick={copyAddress}
+            aria-label="复制访问地址" title="复制访问地址">
+            <Icon name="copy" size={14} />
+          </button>
+        </div>
         <button type="button" className="device-chip" onClick={renameDevice}
           aria-label={`设备 ${deviceName}，点击改名`} title="点击改名">
           <Icon name="device" size={13} /><span>{deviceName}</span>
@@ -204,6 +225,7 @@ function AppInner() {
 
       {previewAsset && <PreviewModal asset={previewAsset} onSaved={handlePreviewSaved} onClose={() => setPreviewAsset(null)} />}
       {accessOpen && (
+        <AccessModal address={serverAddress}
           onClose={() => setAccessOpen(false)}
           onCopied={() => showToast('访问地址已复制')} />
       )}
