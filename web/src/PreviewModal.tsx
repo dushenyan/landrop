@@ -1,6 +1,7 @@
 import { useEffect, useRef, useState, type ChangeEvent } from 'react';
 import type { Asset } from './api';
 import { api } from './api';
+import { copyText } from './clipboard';
 import { getDevice } from './device';
 import Icon from './icons';
 import { plainText, renderDocument } from './markdown';
@@ -34,6 +35,8 @@ export default function PreviewModal({ asset, onClose, onSaved }: Props) {
   const [preparing, setPreparing] = useState(false);
   const [saving, setSaving] = useState(false);
   const [error, setError] = useState('');
+  const [copied, setCopied] = useState(false);
+  const copyTimer = useRef<number | null>(null);
   useScrollLock(true);
 
   const imageUpload = useImageUpload(getDevice().name, textareaRef, (value) => setDraft(value));
@@ -50,6 +53,10 @@ export default function PreviewModal({ asset, onClose, onSaved }: Props) {
     const onKey = (e: KeyboardEvent) => { if (e.key === 'Escape') onClose(); };
     window.addEventListener('keydown', onKey);
     closeRef.current?.focus();
+    return () => {
+      window.removeEventListener('keydown', onKey);
+      if (copyTimer.current !== null) window.clearTimeout(copyTimer.current);
+    };
   }, [onClose]);
 
   useEffect(() => {
@@ -57,6 +64,7 @@ export default function PreviewModal({ asset, onClose, onSaved }: Props) {
     setDraft(null);
     setShowRendered(false);
     setError('');
+    setCopied(false);
   }, [asset.current_version_id]);
 
   useEffect(() => {
@@ -73,6 +81,17 @@ export default function PreviewModal({ asset, onClose, onSaved }: Props) {
       .catch(() => { if (!cancelled) setTextError(true); });
     return () => { cancelled = true; };
   }, [url, isText]);
+
+  const copyPreviewText = async () => {
+    if (text === null) return;
+    if (await copyText(text)) {
+      setCopied(true);
+      if (copyTimer.current !== null) window.clearTimeout(copyTimer.current);
+      copyTimer.current = window.setTimeout(() => setCopied(false), 2000);
+    } else {
+      window.prompt('手动复制：', text);
+    }
+  };
 
   const startEdit = async () => {
     setError('');
@@ -194,6 +213,11 @@ export default function PreviewModal({ asset, onClose, onSaved }: Props) {
             <span className="preview-by">来自 {asset.source_device}</span>
           </div>
           <div className="preview-actions">
+            {isText && !editing && text !== null && (
+              <button type="button" className="link-btn" onClick={copyPreviewText}>
+                <Icon name={copied ? 'check' : 'copy'} size={12} />{copied ? '已复制' : '复制文本'}
+              </button>
+            )}
             {!editing && (
               <button type="button" className="link-btn" onClick={startEdit} disabled={preparing || saving}>
                 <Icon name="edit" size={12} />{preparing ? '准备中' : '编辑'}
