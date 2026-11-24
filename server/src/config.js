@@ -19,6 +19,7 @@ function positiveInt(value, fallback, label) {
 }
 
 export const config = {
+  port: positiveInt(process.env.LANDROP_PORT, 6861, 'LANDROP_PORT'),
   host: '0.0.0.0',
   serverDir,
   projectDir,

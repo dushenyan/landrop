@@ -11,6 +11,8 @@ SHELL := /bin/bash
 NPM      ?= npm
 PNPM     ?= pnpm
 NODE     ?= node
+PORT     ?= 6861
+WEB_PORT ?= 6862
 # 后端 config.js 用 Number() 解析，必须给字节数，不能写 10GB。
 DATA_DIR ?= $(CURDIR)/data
 MAX_FILE ?= 10737418240

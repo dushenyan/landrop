@@ -2,6 +2,8 @@ import { createLogger, defineConfig } from 'vite';
 import react from '@vitejs/plugin-react';
 import { lanIPv4 } from '../server/src/config.js';
 
+const apiPort = process.env.LANDROP_PORT || '6861';
+const webPort = Number(process.env.VITE_WEB_PORT || '6862');
 const target = `http://127.0.0.1:${apiPort}`;
 
 const logger = createLogger();

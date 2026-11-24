@@ -37,11 +37,14 @@ make help
 ```bash
 make install   # web 用 pnpm、server 用 npm
 make build     # 构建前端，产物由后端自动托管
+make start     # 后台启动/重启开发服务（6861/6862）
 make serve     # 构建并前台启动生产服务；make serve-bg 后台启动
 ```
 
+开发时前后端要一起跑：`make start`（后台常驻，重复执行会先停止再重启）；前台开发用 `make dev`。默认后端 `6861`、前端 `6862`；端口、数据目录、上传上限可覆盖，例如：
 
 ```bash
+make start PORT=6861 WEB_PORT=6862 DATA_DIR=/tmp/landrop MAX_FILE=5368709125
 ```
 
 `MAX_FILE` 必须是字节数；清理用 `make clean` / `make clean-all`，两者都不会碰数据目录。
@@ -93,6 +96,7 @@ data/
 
 可用环境变量覆盖：
 
+- `LANDROP_PORT`：端口，默认 6861，必须是正整数
 - `LANDROP_DATA_DIR`：数据目录，相对路径按项目根目录解析
 - `LANDROP_MAX_FILE`：单文件上限，字节数，默认 10737418240（10GB）；非法值会导致启动失败
 
